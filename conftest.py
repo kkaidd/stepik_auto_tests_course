@@ -1,5 +1,6 @@
 import pytest
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options as chrome_options
 @pytest.fixture
 def chrome_options():
@@ -18,3 +19,11 @@ def get_webdriver(get_chrome_options):   #usr->local->bin
 
 def setup(request, get_webdriver):
     driver = get_webdriver
+
+@pytest.fixture(scope="function")
+def browser():
+    print("\nstart browser for test..")
+    browser = webdriver.Chrome()
+    yield browser
+    print("\nquit browser..")
+    browser.quit()
