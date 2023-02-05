@@ -15,10 +15,6 @@ def get_webdriver(get_chrome_options):   #usr->local->bin через "Double Com
     options = get_chrome_options
     driver = webdriver.Chrome(options=options)
     return driver
-@pytest.fixture
-
-def setup(request, get_webdriver):
-    driver = get_webdriver
 
 @pytest.fixture(scope="function")
 def browser():
@@ -29,23 +25,52 @@ def browser():
     browser.quit()
 
 def pytest_addoption(parser):
-    parser_addoption('--browser_name', action='store', default=None
-                     help="Choose browser: chrome o firefox")
+    parser.addoption('--browser_name', action='store', default="chrome",
+                     help="Choose browser: chrome or firefox")
 
-@pytest.fixture(scope="fuction"):
-    def browser(request):
-        browser_name = request.config.getoption("browser_name")
-        browser_name = None
-        if browser_name == "chrome":
-            print("\nstart chrome browser for test...")
-            browser = webdriver.Chrome()
-        elif browser_name == "firefox":
-            print("\nstart firefox browser for test...")
-            browser = webdriver.Firefox()
-        else:
-            raise pytest.UsageError("--browser_name should be chrom or firefox")
-        yield browser
-        print("\nquit browser")
-        browser.quit()
+@pytest.fixture(scope="function")
+def browser(request):
+    browser_name = request.config.getoption("browser_name")
+    browser = None
+    if browser_name == "chrome":
+        print("\nstart chrome browser for test..")
+        browser = webdriver.Chrome()
+    elif browser_name == "firefox":
+        print("\nstart firefox browser for test..")
+        browser = webdriver.Firefox()
+    else:
+        raise pytest.UsageError("--browser_name should be chrome or firefox")
+    yield browser
+    print("\nquit browser..")
+    browser.quit()
+
+""" упрощенная версия добавление новых браузеров
+import pytest
+from selenium import webdriver
 
 
+supported_browsers = {
+    'chrome': webdriver.Chrome,
+    'firefox': webdriver.Firefox
+}
+
+
+def pytest_addoption(parser):
+    parser.addoption('--browser_name', action='store', default='chrome',
+                     help="Choose browser: chrome or firefox")
+
+
+@pytest.fixture(scope="function")
+def browser(request):
+    browser_name = request.config.getoption("browser_name")
+
+    if browser_name in supported_browsers:
+        browser = supported_browsers.get(browser_name)()
+        print(f"\nstart {browser_name} browser for test..")
+    else:
+        joined_browsers = ', '.join(supported_browsers.keys())
+        raise pytest.UsageError(f"--browser_name is invalid, supported browsers: {joined_browsers}")
+
+    yield browser
+    print("\nquit browser..")
+    browser.quit()"""
